@@ -68,7 +68,14 @@ export class PTOAdminComponent implements OnInit {
   updateStatus(id: number, status: 'approved' | 'rejected'): void {
     this.apiService.updatePTOStatus(id, status).subscribe({
       next: (updatedPTO) => {
-        this.ptos = this.ptos.map((pto) => (pto.id === id ? updatedPTO : pto));
+        this.ptos = this.ptos.map((pto) =>
+          pto.id === id
+            ? {
+                ...pto,
+                status: updatedPTO.status,
+              }
+            : pto
+        );
         this.snackBar.open(`PTO request ${status}`, 'Close', {
           duration: 3000,
         });
