@@ -56,7 +56,7 @@ export class LoginComponent {
 
     this.loading = true;
     const { username, password } = this.loginForm.value;
-    console.log('Login attempt:', { username }); // Debug: Log username only
+    console.log('Login attempt:', { username });
 
     this.authService.login(username, password).subscribe({
       next: () => {

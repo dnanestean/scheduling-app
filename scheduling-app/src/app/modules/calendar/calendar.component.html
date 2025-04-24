@@ -1,12 +1,21 @@
 <div class="calendar-container">
-  <mat-form-field>
-    <mat-label>View Mode</mat-label>
-    <mat-select [(value)]="calendarOptions.initialView" (selectionChange)="changeView($event.value)">
-      <mat-option *ngFor="let mode of viewModes" [value]="mode.value">
-        {{ mode.label }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
-
+  <div class="controls">
+    <mat-form-field>
+      <mat-label>View Mode</mat-label>
+      <mat-select [(value)]="calendarOptions.initialView" (selectionChange)="changeView($event.value)">
+        <mat-option *ngFor="let mode of viewModes" [value]="mode.value">
+          {{ mode.label }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field *ngIf="!isAdmin">
+      <mat-label>Country</mat-label>
+      <mat-select [(ngModel)]="selectedCountry" (selectionChange)="onCountryChange()">
+        <mat-option *ngFor="let country of countries" [value]="country">
+          {{ country }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
   <full-calendar #calendar [options]="calendarOptions"></full-calendar>
 </div>

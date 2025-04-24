@@ -1,4 +1,4 @@
-// scheduling-api/server.js
+
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
 const bcrypt = require('bcrypt');

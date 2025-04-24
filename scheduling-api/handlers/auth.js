@@ -43,7 +43,7 @@ const getCurrentUser = async (request, h) => {
       username: user.username,
       role: user.role,
       name: user.name || '',
-      country: user.country || '',
+      country: user.country || 'US',
     };
   } catch (error) {
     console.error('Get current user error:', error);

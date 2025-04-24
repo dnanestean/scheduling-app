@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { FormsModule } from '@angular/forms';
 import { CalendarOptions, EventInput } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -14,6 +15,7 @@ import { PTO } from '../pto/types/pto.interface';
 import { Holiday } from './types/holiday.interface';
 import { Router } from '@angular/router';
 import { FullCalendarComponent } from '@fullcalendar/angular';
+import { User } from '../../modules/profile/types/user.interface';
 
 @Component({
   selector: 'app-calendar',
@@ -25,6 +27,7 @@ import { FullCalendarComponent } from '@fullcalendar/angular';
     MatSelectModule,
     MatFormFieldModule,
     MatSnackBarModule,
+    FormsModule,
   ],
   templateUrl: './calendar.component.html',
   styleUrls: ['./calendar.component.scss'],
@@ -49,6 +52,10 @@ export class CalendarComponent implements OnInit {
     { value: 'timeGridWeek', label: 'Weekly' },
   ];
 
+  selectedCountry: string = '';
+  countries = ['US', 'CA', 'GB'];
+  isAdmin: boolean = false;
+
   constructor(
     private apiService: ApiService,
     private authService: AuthService,
@@ -57,48 +64,66 @@ export class CalendarComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadEvents();
+    this.authService.getUserProfile().subscribe({
+      next: (user: User | null) => {
+        this.isAdmin = user?.role === 'admin';
+        this.selectedCountry = user?.country || 'US';
+        this.loadEvents();
+      },
+      error: (err: any) => {
+        this.snackBar.open('Failed to load user profile', 'Close', {
+          duration: 3000,
+        });
+        if (err.status === 401) {
+          localStorage.removeItem('auth_token');
+          this.router.navigate(['/login']);
+        }
+        this.selectedCountry = 'US';
+        this.loadEvents();
+      },
+    });
   }
 
   loadEvents(): void {
     console.log('Token before request:', localStorage.getItem('auth_token'));
-    this.authService.isAdmin().subscribe((isAdmin) => {
-      console.log('Is Admin:', isAdmin);
-      const ptoObservable = isAdmin
-        ? this.apiService.getAllPTOs()
-        : this.apiService.getUserPTOs();
+    const ptoObservable = this.isAdmin
+      ? this.apiService.getAllPTOs()
+      : this.apiService.getUserPTOs();
 
-      ptoObservable.subscribe({
-        next: (ptos: PTO[]) => {
-          console.log('Calendar PTOs:', ptos);
-          const ptoEvents: EventInput[] = ptos.map((pto) => {
-            const startDate = new Date(pto.startDate);
-            startDate.setDate(startDate.getDate() + 1);
-            const endDate = new Date(pto.endDate);
-            endDate.setDate(endDate.getDate() + 2);
-            const title = isAdmin
-              ? `PTO (${pto.status}) - ${pto.username || 'Unknown'}`
-              : `PTO (${pto.status})`;
-            const event = {
-              title,
-              start: startDate.toISOString().split('T')[0],
-              end: endDate.toISOString().split('T')[0],
-              backgroundColor: this.getPTOColor(pto.status),
-              borderColor: this.getPTOColor(pto.status),
-              extendedProps: {
-                type: 'pto',
-                status: pto.status,
-                reason: pto.reason,
-                username: pto.username,
-              },
-              allDay: true,
-            };
-            console.log('PTO Event:', event);
-            return event;
-          });
+    ptoObservable.subscribe({
+      next: (ptos: PTO[]) => {
+        console.log('Calendar PTOs:', ptos);
+        const ptoEvents: EventInput[] = ptos.map((pto) => {
+          const startDate = new Date(pto.startDate);
+          startDate.setDate(startDate.getDate() + 1);
+          const endDate = new Date(pto.endDate);
+          endDate.setDate(endDate.getDate() + 2);
+          const title = this.isAdmin
+            ? `PTO (${pto.status}) - ${pto.username || 'Unknown'}`
+            : `PTO (${pto.status})`;
+          const event = {
+            title,
+            start: startDate.toISOString().split('T')[0],
+            end: endDate.toISOString().split('T')[0],
+            backgroundColor: this.getPTOColor(pto.status),
+            borderColor: this.getPTOColor(pto.status),
+            extendedProps: {
+              type: 'pto',
+              status: pto.status,
+              reason: pto.reason,
+              username: pto.username,
+            },
+            allDay: true,
+          };
+          console.log('PTO Event:', event);
+          return event;
+        });
 
-          this.apiService.getHolidays().subscribe({
+        this.apiService
+          .getHolidays(this.isAdmin ? undefined : this.selectedCountry)
+          .subscribe({
             next: (holidays: Holiday[]) => {
+              console.log('Holidays for', this.selectedCountry, ':', holidays);
               const holidayEvents: EventInput[] = holidays.map((holiday) => {
                 const holidayDate = new Date(holiday.date);
                 const formattedDate = `${holidayDate.getFullYear()}-${(
@@ -140,14 +165,14 @@ export class CalendarComponent implements OnInit {
                 }
               }, 500);
             },
-            error: (err) => {
+            error: (err: any) => {
               console.error('Holidays error:', err);
               const mockHolidays: Holiday[] = [
                 {
                   id: 1,
                   name: 'Independence Day',
                   date: '2025-07-04',
-                  country: undefined,
+                  country: 'US',
                 },
               ];
               const holidayEvents: EventInput[] = mockHolidays.map(
@@ -159,9 +184,11 @@ export class CalendarComponent implements OnInit {
                     allDay: true,
                     backgroundColor: '#2196f3',
                     borderColor: '#2196f3',
-                    extendedProps: { type: 'holiday' },
+                    extendedProps: {
+                      type: 'holiday',
+                      country: holiday.country,
+                    },
                   };
-                  console.log('Holiday Event:', event);
                   return event;
                 }
               );
@@ -170,19 +197,18 @@ export class CalendarComponent implements OnInit {
               console.log('Calendar Events:', this.calendarOptions.events);
             },
           });
-        },
-        error: (err) => {
-          this.snackBar.open('Failed to load calendar events', 'Close', {
-            duration: 3000,
-          });
-          if (err.status === 401) {
-            console.log('401 Error - Clearing token and redirecting to login');
-            localStorage.removeItem('auth_token');
-            this.router.navigate(['/login']);
-          }
-          console.error('PTOs error:', err);
-        },
-      });
+      },
+      error: (err: any) => {
+        this.snackBar.open('Failed to load calendar events', 'Close', {
+          duration: 3000,
+        });
+        if (err.status === 401) {
+          console.log('401 Error - Clearing token and redirecting to login');
+          localStorage.removeItem('auth_token');
+          this.router.navigate(['/login']);
+        }
+        console.error('PTOs error:', err);
+      },
     });
   }
 
@@ -226,5 +252,9 @@ export class CalendarComponent implements OnInit {
     } else {
       console.warn('Calendar API not available in changeView');
     }
+  }
+
+  onCountryChange(): void {
+    this.loadEvents();
   }
 }

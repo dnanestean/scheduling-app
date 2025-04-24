@@ -1,4 +1,3 @@
-// app/core/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, catchError, of } from 'rxjs';
@@ -15,10 +14,9 @@ export class AuthService {
     !!localStorage.getItem(this.tokenKey)
   );
   private isAdminSubject = new BehaviorSubject<boolean>(false);
-  private currentUserSubject = new BehaviorSubject<User | null>(null); // Added for caching
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
 
   constructor(private http: HttpClient, private router: Router) {
-    // Check initial user and admin status if logged in
     if (this.isLoggedInSubject.getValue()) {
       this.updateUserAndAdminStatus();
     }
@@ -49,7 +47,7 @@ export class AuthService {
   getCurrentUser(): Observable<User | null> {
     const currentUser = this.currentUserSubject.value;
     if (currentUser) {
-      return of(currentUser); // Return cached user
+      return of(currentUser);
     }
     return this.http.get<User>(`${this.apiUrl}/auth/me`).pipe(
       tap((user) => {
@@ -63,6 +61,10 @@ export class AuthService {
         return of(null);
       })
     );
+  }
+
+  getUserProfile(): Observable<User | null> {
+    return this.getCurrentUser();
   }
 
   isLoggedIn(): Observable<boolean> {
@@ -83,7 +85,7 @@ export class AuthService {
     this.isAdminSubject.next(false);
     this.currentUserSubject.next(null);
     console.log('AuthService: Logged out');
-    this.router.navigate(['/login']); // Added for consistency
+    this.router.navigate(['/login']);
   }
 
   private updateUserAndAdminStatus(): void {
@@ -110,7 +112,6 @@ export class AuthService {
     });
   }
 
-  // Static method for interceptor to access token without injection
   static getToken(): string | null {
     return localStorage.getItem('auth_token');
   }

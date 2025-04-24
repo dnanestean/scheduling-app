@@ -1,4 +1,4 @@
-// scheduling-api/routes/auth.js
+
 const Joi = require('joi');
 const Boom = require('@hapi/boom');
 const bcrypt = require('bcrypt');
