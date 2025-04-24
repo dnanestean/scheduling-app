@@ -1,0 +1,31 @@
+
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+.fc {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.fc .fc-button {
+  background-color: #3f51b5;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+}
+
+.fc .fc-button:hover {
+  background-color: #303f9f;
+}
+
+.fc .fc-toolbar {
+  margin-bottom: 20px;
+}
+
+.fc .fc-daygrid-day-number {
+  color: #333;
+}

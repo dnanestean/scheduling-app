@@ -1,0 +1,24 @@
+
+<mat-toolbar color="primary">
+  <ng-container *ngIf="!(isLoggedIn$ | async)">
+    <span>Scheduling App</span>
+  </ng-container>
+  <ng-container *ngIf="isLoggedIn$ | async">
+    <ng-container *ngIf="currentUser$ | async as user">
+      <span>Welcome, {{ user.name || user.username }}</span>
+    </ng-container>
+    <div>
+      <button mat-button routerLink="/calendar">Calendar</button>
+      <button mat-button routerLink="/pto-request">PTO Request</button>
+      <button mat-button routerLink="/profile">Profile</button>
+      <button mat-button *ngIf="isAdmin$ | async" routerLink="/pto-admin">
+        PTO Admin
+      </button>
+      <button mat-button *ngIf="isAdmin$ | async" routerLink="/holiday-admin">
+        Holiday Admin
+      </button>
+      <button mat-button (click)="logout()">Logout</button>
+    </div>
+
+  </ng-container>
+</mat-toolbar>

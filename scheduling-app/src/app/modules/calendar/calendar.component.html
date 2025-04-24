@@ -1,0 +1,12 @@
+<div class="calendar-container">
+  <mat-form-field>
+    <mat-label>View Mode</mat-label>
+    <mat-select [(value)]="calendarOptions.initialView" (selectionChange)="changeView($event.value)">
+      <mat-option *ngFor="let mode of viewModes" [value]="mode.value">
+        {{ mode.label }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <full-calendar #calendar [options]="calendarOptions"></full-calendar>
+</div>

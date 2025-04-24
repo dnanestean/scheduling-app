@@ -1,0 +1,43 @@
+# Compiled output
+scheduling-app/dist
+scheduling-app/tmp
+scheduling-app/out-tsc
+scheduling-app/bazel-out
+scheduling-api/database.sqlite
+scheduling-api/database.sqlite
+
+# Node
+scheduling-app/node_modules
+scheduling-api/node_modules
+scheduling-app/npm-debug.log
+scheduling-app/yarn-error.log
+
+# IDEs and editors
+scheduling-app/.idea/
+scheduling-app/.project
+scheduling-app/.classpath
+scheduling-app/.c9/
+scheduling-app/*.launch
+scheduling-app/.settings/
+scheduling-app/*.sublime-workspace
+
+# Visual Studio Code
+scheduling-app/.vscode/*
+scheduling-app/!.vscode/settings.json
+scheduling-app/!.vscode/tasks.json
+scheduling-app/!.vscode/launch.json
+scheduling-app/!.vscode/extensions.json
+scheduling-app/.history/*
+
+# Miscellaneous
+scheduling-app/.angular/cache
+scheduling-app/.sass-cache/
+scheduling-app/connect.lock
+scheduling-app/coverage
+scheduling-app/libpeerconnection.log
+scheduling-app/testem.log
+scheduling-app/typings
+
+# System files
+scheduling-app/.DS_Store
+scheduling-app/Thumbs.db
